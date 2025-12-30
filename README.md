@@ -110,3 +110,10 @@ PATIENT_ID
 
 Run
 python main.py
+
+
+<img width="1412" height="933" alt="Screenshot 2025-12-18 165844" src="https://github.com/user-attachments/assets/8be59f70-a39e-4706-a2c5-e8e6c08016ab" />
+
+
+
+
