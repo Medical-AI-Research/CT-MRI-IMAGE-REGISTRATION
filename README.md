@@ -111,6 +111,8 @@ PATIENT_ID
 Run
 python main.py
 
+<img width="455" height="470" alt="Screenshot 2025-12-23 101006" src="https://github.com/user-attachments/assets/8aa80eb8-e199-4c8c-96ad-76750629a1f4" />
+<img width="1049" height="726" alt="Screenshot 2025-12-23 102127" src="https://github.com/user-attachments/assets/9bc5e10b-38de-4c3c-94dd-53b81ddb8609" />
 
 <img width="1412" height="933" alt="Screenshot 2025-12-18 165844" src="https://github.com/user-attachments/assets/8be59f70-a39e-4706-a2c5-e8e6c08016ab" />
 
