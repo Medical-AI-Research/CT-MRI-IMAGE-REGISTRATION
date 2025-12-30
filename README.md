@@ -1,4 +1,3 @@
-# ct_mri_image_registration
 Automatic CT–MRI image registration pipeline for medical imaging. Loads raw DICOM CT and MRI volumes, performs fully automatic 3D rigid registration using mutual information, resamples MRI to the CT grid, crops CT to the MRI field of view, and evaluates alignment using quantitative metrics (NMI, NCC, MAD, Edge Dice, FoV overlap).
 # CT–MRI Rigid Registration & Evaluation Pipeline
 
@@ -7,7 +6,7 @@ Designed for **clinical R&D, validation, and research reporting**.
 
 ---
 
-## 📌 What This Project Does (Straight Facts)
+## What This Project Does (Straight Facts)
 
 - Loads **raw CT & MRI DICOM series**
 - Reorients both to a **common anatomical orientation (RAI)**
@@ -23,7 +22,7 @@ No manual landmarks. No GUI dependency. Fully reproducible.
 
 ---
 
-## 🧠 Core Techniques Used
+## Core Techniques Used
 
 - **SimpleITK**
   - Mattes Mutual Information (MI)
@@ -37,7 +36,7 @@ No manual landmarks. No GUI dependency. Fully reproducible.
 
 ---
 
-## 📂 Output Folder Structure
+## Output Folder Structure
 
 PatientXX/
 ├── raw_ct/ # (optional copy)
@@ -63,7 +62,7 @@ PatientXX/
 
 ---
 
-## 📊 Evaluation Metrics Implemented
+## Evaluation Metrics Implemented
 
 ### Intensity-Based
 - **NMI (Normalized Mutual Information)**
@@ -96,9 +95,9 @@ These catch failures that metrics alone won’t.
 
 ---
 
-## ⚙️ How to Run
+## How to Run
 
-### 1️⃣ Requirements
+### Requirements
 ```bash
 pip install SimpleITK numpy matplotlib
 ```
