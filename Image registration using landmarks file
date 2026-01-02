@@ -4,7 +4,7 @@ import json
 import numpy as np
 import SimpleITK as sitk
 import matplotlib.pyplot as plt
-
+#.\.venv\Scripts\Activate.ps1
 # ============================================================
 #                USER SETTINGS 
 # ============================================================
@@ -20,9 +20,15 @@ MRI_RAW_DIR  = r"D:\other datasets\Mutukrishnan\MRI\MUTHUKR\1\3"
 
 # Optional initial rigid transform (from 3D Slicer or previous run)
 INITIAL_TFM_PATH = None   # or None
-INITIAL_TXT_PATH = r"D:\LandMarkTransform.txt"   # or NoneTFM_FROM_SLICER = True   # True if exported from 3D Slicer
+INITIAL_TXT_PATH = r"D:\transforms\1 0 0 0.txt"   # or None
+TFM_FROM_SLICER  = True
 # If True → copies raw DICOMs into PatientXX/raw_ct, raw_mri
 COPY_RAW_DICOM = False
+# --- TRANSFORM INPUT CONTROL ---
+USE_INITIAL_TXT = True          # True = use TXT matrix
+USE_INVERSE_TXT = True         # True ONLY if TXT is CT→MRI and you want MRI→CT
+REFINE_WITH_MI  = False          # False = pure matrix application (debug mode)
+
 
 # ============================================================
 
@@ -126,12 +132,27 @@ def load_txt_homogeneous_matrix(txt_path):
         raise ValueError("TXT transform must be 4x4")
 
     if not np.allclose(M[3], [0, 0, 0, 1]):
-        raise ValueError("Last row of homogeneous matrix must be [0 0 0 1]")
+        raise ValueError("Last row must be [0 0 0 1]")
 
-    tfm = sitk.AffineTransform(3)
-    tfm.SetMatrix(M[:3, :3].ravel())
-    tfm.SetTranslation(M[:3, 3])
+    R = M[:3, :3]
+    t = M[:3, 3]
+
+    # --- ORTHONORMALIZE ROTATION (SVD projection to SO(3)) ---
+    U, _, Vt = np.linalg.svd(R)
+    R_ortho = U @ Vt
+
+    # enforce right-handed system
+    if np.linalg.det(R_ortho) < 0:
+        U[:, -1] *= -1
+        R_ortho = U @ Vt
+
+    tfm = sitk.VersorRigid3DTransform()
+    tfm.SetMatrix(R_ortho.ravel())
+    tfm.SetTranslation(t.tolist())
     return tfm
+
+
+
 
 def create_ct_bone_mask(ct_img, hu_threshold=150):
     """
@@ -421,46 +442,49 @@ def main():
     ct_n  = normalize(ct)
     mri_n = normalize(mri)
 
+    # --- GEOMETRY-BASED CENTERING (ENSURES FOV OVERLAP) ---
+    center_init = sitk.CenteredTransformInitializer(
+        ct_n,
+        mri_n,
+        sitk.Euler3DTransform(),
+        sitk.CenteredTransformInitializerFilter.GEOMETRY
+    )
+
+
+
     # ------------ RIGID 3D REGISTRATION -------------
     print("\nPerforming 3D rigid registration...")
 
     print("\nLoading provided rigid transform...")
         # -------- load initial transform (tfm OR txt) --------
-    if INITIAL_TXT_PATH is not None:
+    if USE_INITIAL_TXT and INITIAL_TXT_PATH is not None:
         print("Loading initial transform from TXT matrix...")
         initial_from_file = load_txt_homogeneous_matrix(INITIAL_TXT_PATH)
 
-    elif INITIAL_TFM_PATH is not None:
+    elif (not USE_INITIAL_TXT) and INITIAL_TFM_PATH is not None:
         print("Loading initial transform from TFM...")
         initial_from_file = load_initial_transform(
             INITIAL_TFM_PATH,
             from_slicer=TFM_FROM_SLICER
         )
     else:
-        raise RuntimeError("No initial transform provided")
+        raise RuntimeError("No valid initial transform provided")
 
 
-    # center-based fallback (guarantees overlap)
-    center_init = sitk.CenteredTransformInitializer(
-        ct_n,
-        mri_n,
-        sitk.VersorRigid3DTransform(),
-        sitk.CenteredTransformInitializerFilter.GEOMETRY
-    )
 
-    # invert ONLY the file transform
-    file_tfm = initial_from_file.GetInverse()
+        # --- USE FILE TRANSFORM AS AUTHORITATIVE ---
+    file_tfm = initial_from_file
 
-    # compose transforms
-    initial = sitk.CompositeTransform(3)
-    initial.AddTransform(center_init)
-    initial.AddTransform(file_tfm)
+    if USE_INVERSE_TXT:
+        file_tfm = file_tfm.GetInverse()
+        print("Using inverse TXT transform:", USE_INVERSE_TXT)
+
 
     # -------- CREATE REGISTRATION OBJECT (MUST BE HERE) --------
     reg = sitk.ImageRegistrationMethod()
     reg.SetMetricAsMattesMutualInformation(50)
     reg.SetMetricSamplingStrategy(reg.RANDOM)
-    reg.SetMetricSamplingPercentage(0.02)
+    reg.SetMetricSamplingPercentage(0.05)
     reg.SetInterpolator(sitk.sitkLinear)
     reg.SetOptimizerAsGradientDescent(
         learningRate=1.0,
@@ -474,11 +498,19 @@ def main():
     reg.SmoothingSigmasAreSpecifiedInPhysicalUnitsOn()
 
     # -------- NOW reg EXISTS --------
-    reg.SetInitialTransform(initial, inPlace=False)
-    final_rigid = reg.Execute(ct_n, mri_n)
+    initial = sitk.CompositeTransform(3)
+    initial.AddTransform(center_init)   # coarse alignment
+    initial.AddTransform(file_tfm)      # your TXT (identity for now)
 
-    print("Rigid registration complete.")
-    print("Metric:", reg.GetMetricValue())
+    reg.SetInitialTransform(initial, inPlace=False)
+
+    if REFINE_WITH_MI:
+        final_rigid = reg.Execute(ct_n, mri_n)
+    else:
+        final_rigid = initial   # USE center_init ∘ file_tfm
+
+
+
 
     # Extract the final rigid transform (last in composite)
     if isinstance(final_rigid, sitk.CompositeTransform):
@@ -490,6 +522,14 @@ def main():
         rigid_only,
         os.path.join(reg_dir, "rigid_refined_from_initial_tfm.tfm")
     )
+
+    print("Rigid registration complete.")
+
+    if REFINE_WITH_MI:
+        print("Metric:", reg.GetMetricValue())
+    else:
+        print("Metric: skipped (matrix-only mode)")
+
 
 
 
