@@ -12,11 +12,11 @@ import matplotlib.pyplot as plt
 PATIENT_ID   = "Patient11"
 
 # Base folder where pipeline will save everything
-BASE_OUTDIR  = r"D:\medical_image_registration"
+BASE_OUTDIR  = r"C:\Users\Msi\OneDrive\Desktop\frontend"
 
 # Raw CT + MRI locations (input folders with DICOM files)
-CT_RAW_DIR   = r"D:\other datasets\saroja\CT\173199\raw_ct"
-MRI_RAW_DIR  = r"D:\other datasets\saroja\MRI\1\mri_transverse"
+CT_RAW_DIR   = r"D:\other datasets\Mutukrishnan\CT\MUTHUKR\173429\3"
+MRI_RAW_DIR  = r"D:\other datasets\Mutukrishnan\MRI\MUTHUKR\1\3"
 
 # If True → copies raw DICOMs into PatientXX/raw_ct, raw_mri
 COPY_RAW_DICOM = False
