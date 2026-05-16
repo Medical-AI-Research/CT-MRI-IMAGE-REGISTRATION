@@ -1,9 +1,9 @@
-# ── Build stage ──────────────────────────────────────────────────────────────
-FROM python:3.11-slim AS base
+FROM python:3.11-slim
 
-# System deps for SimpleITK (needs libGL on some platforms)
+# System deps for SimpleITK
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libgl1 libglib2.0-0 \
+    libgl1 \
+    libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -12,18 +12,16 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy source
-COPY pipeline.py app.py ./
+# Copy source files
+COPY pipeline.py app.py index.html ./
 
-# Optional: copy pre-built frontend (see README)
-# COPY frontend/dist ./frontend/dist
+# HuggingFace Spaces requires port 7860
+ENV PORT=7860
+ENV JOBS_ROOT=/app/jobs
 
-# Jobs stored here — mount a volume in production for persistence
+# Create jobs directory
 RUN mkdir -p /app/jobs
 
-EXPOSE 8000
+EXPOSE 7860
 
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000", \
-     "--workers", "1", \
-     "--limit-max-requests", "1000", \
-     "--timeout-keep-alive", "30"]
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "7860"]

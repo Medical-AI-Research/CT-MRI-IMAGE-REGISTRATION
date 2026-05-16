@@ -1,723 +1,593 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>CT/MRI Registration</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700&display=swap" rel="stylesheet" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>MedReg — CT/MRI Registration</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
-  :root {
-    --bg:        #0a0c0f;
-    --bg2:       #111318;
-    --bg3:       #181c23;
-    --border:    rgba(255,255,255,0.07);
-    --border2:   rgba(255,255,255,0.13);
-    --accent:    #00e5c0;
-    --accent2:   #0057ff;
-    --text:      #e8eaf0;
-    --muted:     #6b7280;
-    --danger:    #ff4b4b;
-    --warn:      #f59e0b;
-    --success:   #22c55e;
-    --font-head: 'Syne', sans-serif;
-    --font-mono: 'DM Mono', monospace;
-  }
+:root{
+  --bg:#04070d;
+  --bg2:#0b1120;
+  --bg3:#111828;
+  --bg4:#181f30;
+  --bg5:#1e2840;
+  --accent:#00f5c4;
+  --blue:#3b82f6;
+  --purple:#8b5cf6;
+  --text:#eef2ff;
+  --text2:#94a3b8;
+  --text3:#475569;
+  --border:#1e2d47;
+  --border2:#2a3f5f;
+  --success:#22d3a5;
+  --warn:#f59e0b;
+  --danger:#f43f5e;
+  --font:'Space Grotesk',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+}
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font-mono);
-    font-size: 14px;
-    min-height: 100vh;
-    line-height: 1.6;
-  }
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;line-height:1.6;min-height:100vh;overflow-x:hidden;}
 
-  /* ── HEADER ── */
-  header {
-    border-bottom: 1px solid var(--border);
-    padding: 0 2rem;
-    height: 56px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    background: var(--bg);
-    z-index: 100;
-  }
-  .logo {
-    font-family: var(--font-head);
-    font-size: 17px;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    color: var(--text);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .logo-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 12px var(--accent);
-  }
-  .badge {
-    font-size: 11px;
-    font-family: var(--font-mono);
-    padding: 2px 8px;
-    border-radius: 3px;
-    border: 1px solid var(--border2);
-    color: var(--muted);
-    letter-spacing: 0.05em;
-  }
+/* ── ANIMATED BG ── */
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(0,245,196,0.022) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,245,196,0.022) 1px,transparent 1px);
+  background-size:64px 64px;
+  pointer-events:none;z-index:0;
+}
 
-  /* ── MAIN LAYOUT ── */
-  main {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 3rem 2rem 6rem;
-  }
+/* ── GLOW ORBS ── */
+.orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(100px);}
+.orb1{width:700px;height:700px;background:radial-gradient(circle,#1d4ed8,transparent 70%);top:-250px;right:-200px;opacity:0.15;}
+.orb2{width:500px;height:500px;background:radial-gradient(circle,#00f5c4,transparent 70%);bottom:-150px;left:-150px;opacity:0.09;}
+.orb3{width:400px;height:400px;background:radial-gradient(circle,#7c3aed,transparent 70%);top:30%;left:30%;opacity:0.07;}
 
-  /* ── HERO ── */
-  .hero {
-    margin-bottom: 3rem;
-  }
-  .hero h1 {
-    font-family: var(--font-head);
-    font-size: clamp(2rem, 5vw, 3.2rem);
-    font-weight: 700;
-    line-height: 1.15;
-    letter-spacing: -0.04em;
-    color: var(--text);
-    margin-bottom: 0.75rem;
-  }
-  .hero h1 span { color: var(--accent); }
-  .hero p {
-    color: var(--muted);
-    font-size: 14px;
-    max-width: 520px;
-  }
+/* ── NAV ── */
+nav{
+  position:sticky;top:0;z-index:200;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 2.5rem;height:64px;
+  background:rgba(4,7,13,0.8);
+  backdrop-filter:blur(28px);
+  border-bottom:1px solid var(--border);
+}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
+.logo-mark{
+  width:34px;height:34px;border-radius:10px;
+  background:var(--accent);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:16px;color:#000;letter-spacing:-0.05em;
+}
+.logo-name{font-size:18px;font-weight:700;letter-spacing:-0.04em;color:var(--text);}
+.nav-tags{display:flex;gap:6px;}
+.ntag{
+  font-family:var(--mono);font-size:11px;letter-spacing:0.06em;
+  padding:3px 10px;border-radius:20px;
+  border:1px solid var(--border2);color:var(--text3);
+}
+.ntag.on{
+  border-color:rgba(0,245,196,0.35);
+  color:var(--success);
+  background:rgba(0,245,196,0.06);
+}
+.ntag.on::before{content:'● ';font-size:7px;vertical-align:1px;}
 
-  /* ── UPLOAD GRID ── */
-  .upload-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    margin-bottom: 1rem;
-  }
-  @media (max-width: 600px) {
-    .upload-grid { grid-template-columns: 1fr; }
-  }
+/* ── MAIN ── */
+main{position:relative;z-index:1;max-width:980px;margin:0 auto;padding:5rem 2rem 9rem;}
 
-  .drop-zone {
-    border: 1px dashed var(--border2);
-    border-radius: 8px;
-    background: var(--bg2);
-    padding: 2rem 1.5rem;
-    text-align: center;
-    cursor: pointer;
-    transition: border-color 0.2s, background 0.2s;
-    position: relative;
-    overflow: hidden;
-  }
-  .drop-zone:hover, .drop-zone.drag-over {
-    border-color: var(--accent);
-    background: rgba(0,229,192,0.04);
-  }
-  .drop-zone input[type="file"] {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    cursor: pointer;
-  }
-  .drop-icon {
-    font-size: 28px;
-    margin-bottom: 0.75rem;
-    display: block;
-  }
-  .drop-label {
-    font-family: var(--font-head);
-    font-size: 15px;
-    font-weight: 600;
-    margin-bottom: 0.25rem;
-    color: var(--text);
-  }
-  .drop-sub {
-    font-size: 12px;
-    color: var(--muted);
-  }
-  .drop-zone.has-file { border-color: var(--accent); background: rgba(0,229,192,0.04); }
-  .drop-zone.has-file .drop-icon { filter: grayscale(0); }
-  .file-name {
-    margin-top: 0.6rem;
-    font-size: 12px;
-    color: var(--accent);
-    word-break: break-all;
-  }
+/* ── HERO ── */
+.hero{text-align:center;margin-bottom:4rem;}
 
-  /* ── BUTTONS ── */
-  .btn-run {
-    width: 100%;
-    padding: 0.9rem 2rem;
-    border-radius: 6px;
-    border: none;
-    background: var(--accent);
-    color: #000;
-    font-family: var(--font-head);
-    font-size: 15px;
-    font-weight: 700;
-    cursor: pointer;
-    letter-spacing: -0.01em;
-    transition: opacity 0.2s, transform 0.1s;
-    margin-bottom: 1rem;
-  }
-  .btn-run:hover { opacity: 0.88; }
-  .btn-run:active { transform: scale(0.99); }
-  .btn-run:disabled { opacity: 0.35; cursor: not-allowed; }
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:var(--mono);font-size:11px;color:var(--accent);
+  letter-spacing:0.14em;text-transform:uppercase;
+  border:1px solid rgba(0,245,196,0.2);
+  padding:5px 16px;border-radius:20px;margin-bottom:2rem;
+  background:rgba(0,245,196,0.05);
+}
+.eyebrow-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);}
 
-  .btn-dl {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 0.6rem 1.25rem;
-    border-radius: 6px;
-    border: 1px solid var(--accent);
-    background: transparent;
-    color: var(--accent);
-    font-family: var(--font-mono);
-    font-size: 13px;
-    cursor: pointer;
-    transition: background 0.15s;
-    text-decoration: none;
-  }
-  .btn-dl:hover { background: rgba(0,229,192,0.08); }
+h1{
+  font-size:clamp(2.8rem,7vw,5rem);
+  font-weight:700;line-height:1.05;
+  letter-spacing:-0.05em;
+  margin-bottom:1.25rem;
+  color:var(--text);
+}
+h1 .line2{
+  background:linear-gradient(125deg,#00f5c4 0%,#38bdf8 45%,#818cf8 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
 
-  /* ── STATUS AREA ── */
-  #status-area { margin-top: 1.5rem; }
+.hero-desc{
+  font-size:16px;color:var(--text2);
+  max-width:480px;margin:0 auto 2.5rem;
+  line-height:1.8;
+}
 
-  .status-card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 1.25rem 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  }
-  .spinner {
-    width: 20px; height: 20px;
-    border: 2px solid var(--border2);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    flex-shrink: 0;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
+/* feature chips */
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:3rem;}
+.chip{
+  display:flex;align-items:center;gap:7px;
+  padding:6px 14px;border-radius:20px;
+  border:1px solid var(--border2);background:var(--bg2);
+  font-size:12px;font-weight:500;color:var(--text2);
+  transition:border-color 0.2s,color 0.2s;
+}
+.chip:hover{border-color:var(--border2);color:var(--text);}
+.chip-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
 
-  .status-text { font-size: 14px; }
-  .status-text .label { color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 2px; }
-  .status-text .value { color: var(--text); }
-  .status-text .value.ok { color: var(--success); }
-  .status-text .value.err { color: var(--danger); }
+/* stat strip */
+.stat-strip{
+  display:inline-flex;
+  border:1px solid var(--border2);
+  border-radius:14px;overflow:hidden;
+  background:var(--bg2);
+}
+.stat{padding:12px 24px;border-right:1px solid var(--border2);text-align:center;}
+.stat:last-child{border-right:none;}
+.stat-val{font-family:var(--mono);font-size:20px;font-weight:500;color:var(--accent);display:block;}
+.stat-lbl{font-size:10px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;}
 
-  /* ── RESULTS SECTION ── */
-  #results { margin-top: 2.5rem; display: none; }
-  #results.visible { display: block; }
+/* ── SECTION LABELS ── */
+.sec{
+  font-family:var(--mono);font-size:11px;font-weight:500;
+  color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;
+  margin-bottom:1.1rem;
+  display:flex;align-items:center;gap:12px;
+}
+.sec::after{content:'';flex:1;height:1px;background:var(--border);}
 
-  .section-title {
-    font-family: var(--font-head);
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--muted);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .section-title::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
+/* ── UPLOAD CARDS ── */
+.upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;}
+@media(max-width:560px){.upload-grid{grid-template-columns:1fr;}}
 
-  /* ── METRICS ── */
-  .metrics-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 0.75rem;
-    margin-bottom: 2rem;
-  }
-  .metric-card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 1rem;
-  }
-  .metric-key {
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: 0.04em;
-    margin-bottom: 0.35rem;
-  }
-  .metric-val {
-    font-family: var(--font-head);
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--text);
-  }
-  .metric-val.good { color: var(--success); }
-  .metric-val.mid  { color: var(--warn); }
-  .metric-val.bad  { color: var(--danger); }
+.drop{
+  position:relative;
+  border:1px solid var(--border2);border-radius:20px;
+  background:var(--bg2);
+  padding:2.75rem 1.5rem 2.25rem;
+  text-align:center;cursor:pointer;
+  transition:border-color 0.25s,transform 0.25s;
+  overflow:hidden;
+}
+.drop::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 0%,rgba(0,245,196,0.09),transparent 65%);
+  opacity:0;transition:opacity 0.3s;
+}
+.drop:hover{border-color:rgba(0,245,196,0.5);transform:translateY(-3px);}
+.drop:hover::before,.drop.over::before,.drop.picked::before{opacity:1;}
+.drop.over{border-color:rgba(0,245,196,0.6);}
+.drop.picked{border-color:rgba(0,245,196,0.55);background:rgba(0,245,196,0.03);}
+.drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;z-index:2;}
 
-  /* ── PREVIEW IMAGES ── */
-  .preview-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.75rem;
-    margin-bottom: 2rem;
-  }
-  @media (max-width: 700px) {
-    .preview-grid { grid-template-columns: repeat(2, 1fr); }
-  }
-  .preview-card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    overflow: hidden;
-    cursor: pointer;
-    transition: border-color 0.15s;
-  }
-  .preview-card:hover { border-color: var(--border2); }
-  .preview-card img {
-    width: 100%;
-    aspect-ratio: 1;
-    object-fit: cover;
-    display: block;
-    background: #000;
-  }
-  .preview-caption {
-    padding: 0.5rem 0.75rem;
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: 0.03em;
-  }
+.drop-ico{
+  width:60px;height:60px;border-radius:16px;
+  border:1px solid var(--border2);background:var(--bg3);
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;margin:0 auto 1.1rem;
+  transition:border-color 0.25s,background 0.25s;
+  position:relative;z-index:1;
+}
+.drop.picked .drop-ico{border-color:rgba(0,245,196,0.45);background:rgba(0,245,196,0.08);}
 
-  /* ── LIGHTBOX ── */
-  .lightbox {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.9);
-    z-index: 999;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-  }
-  .lightbox.open { display: flex; }
-  .lightbox img {
-    max-width: 90vw;
-    max-height: 80vh;
-    border-radius: 6px;
-    border: 1px solid var(--border2);
-  }
-  .lightbox-caption {
-    margin-top: 1rem;
-    font-size: 13px;
-    color: var(--muted);
-  }
-  .lightbox-close {
-    position: absolute;
-    top: 1.5rem;
-    right: 1.5rem;
-    background: none;
-    border: 1px solid var(--border2);
-    color: var(--text);
-    font-size: 20px;
-    width: 36px; height: 36px;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+.drop-title{font-size:16px;font-weight:600;letter-spacing:-0.02em;position:relative;z-index:1;}
+.drop-sub{font-size:12px;color:var(--text3);margin-top:3px;position:relative;z-index:1;}
+.drop-badge{
+  display:inline-block;margin-top:8px;
+  font-family:var(--mono);font-size:10px;letter-spacing:0.04em;
+  padding:3px 9px;border-radius:5px;
+  background:var(--bg4);border:1px solid var(--border);color:var(--text3);
+  position:relative;z-index:1;
+}
+.drop-file{
+  display:none;margin-top:10px;
+  font-size:12px;font-weight:500;color:var(--accent);
+  font-family:var(--mono);word-break:break-all;
+  position:relative;z-index:1;
+}
+.drop.picked .drop-file{display:block;}
+.drop.picked .drop-sub,.drop.picked .drop-badge{display:none;}
 
-  /* ── DOWNLOAD ROW ── */
-  .dl-row {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
-    margin-top: 0.5rem;
-  }
-  .dl-info {
-    font-size: 12px;
-    color: var(--muted);
-  }
+/* ── RUN BUTTON ── */
+.btn-run{
+  width:100%;padding:1.1rem 2rem;
+  border-radius:14px;border:none;
+  background:var(--accent);color:#000;
+  font-family:var(--font);font-size:15px;font-weight:700;
+  letter-spacing:-0.01em;cursor:pointer;
+  transition:opacity 0.2s,transform 0.12s,box-shadow 0.2s;
+  position:relative;overflow:hidden;
+}
+.btn-run::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.2) 50%,transparent 100%);
+  transform:translateX(-100%);
+  transition:transform 0.6s;
+}
+.btn-run:not(:disabled):hover::before{transform:translateX(100%);}
+.btn-run:not(:disabled):hover{opacity:0.88;box-shadow:0 0 30px rgba(0,245,196,0.2);}
+.btn-run:not(:disabled):active{transform:scale(0.99);}
+.btn-run:disabled{opacity:0.25;cursor:not-allowed;}
 
-  /* ── ERROR ── */
-  .error-box {
-    background: rgba(255,75,75,0.08);
-    border: 1px solid rgba(255,75,75,0.25);
-    border-radius: 8px;
-    padding: 1rem 1.25rem;
-    font-size: 13px;
-    color: var(--danger);
-    white-space: pre-wrap;
-    word-break: break-all;
-    max-height: 220px;
-    overflow-y: auto;
-  }
+/* ── PIPELINE BAR ── */
+.pipe{
+  display:none;
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:12px;overflow:hidden;margin-bottom:1.5rem;
+}
+.pipe.show{display:flex;}
+.pstep{
+  flex:1;padding:0.75rem 0.5rem;
+  text-align:center;font-size:11px;font-weight:500;
+  color:var(--text3);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  transition:all 0.3s;font-family:var(--mono);letter-spacing:0.03em;
+}
+.pstep:last-child{border-right:none;}
+.pdot{width:6px;height:6px;border-radius:50%;background:var(--border2);transition:all 0.3s;}
+.pstep.active{color:var(--accent);background:rgba(0,245,196,0.05);}
+.pstep.active .pdot{background:var(--accent);}
+.pstep.done{color:var(--success);}
+.pstep.done .pdot{background:var(--success);}
 
-  /* ── STEP TIMELINE ── */
-  .steps {
-    display: flex;
-    gap: 0;
-    margin-bottom: 2rem;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-  .step {
-    flex: 1;
-    padding: 0.65rem 1rem;
-    font-size: 12px;
-    color: var(--muted);
-    border-right: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: background 0.3s;
-  }
-  .step:last-child { border-right: none; }
-  .step-dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: var(--border2);
-    flex-shrink: 0;
-    transition: background 0.3s;
-  }
-  .step.active { color: var(--text); background: rgba(255,255,255,0.03); }
-  .step.active .step-dot { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
-  .step.done   { color: var(--success); }
-  .step.done   .step-dot { background: var(--success); }
+/* ── STATUS ── */
+#status-area{margin-bottom:1.25rem;}
+.sc{
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:14px;padding:1.25rem 1.5rem;
+  display:flex;align-items:center;gap:1rem;
+}
+.spin{
+  width:20px;height:20px;flex-shrink:0;
+  border:2px solid var(--border2);border-top-color:var(--accent);
+  border-radius:50%;animation:spin 0.75s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.slbl{font-size:11px;color:var(--text3);font-family:var(--mono);letter-spacing:0.07em;text-transform:uppercase;margin-bottom:3px;}
+.sval{font-size:14px;color:var(--text);}
+.sval.ok{color:var(--success);}.sval.err{color:var(--danger);}
+.ebox{
+  margin-top:0.75rem;
+  background:rgba(244,63,94,0.07);
+  border:1px solid rgba(244,63,94,0.2);
+  border-radius:10px;padding:0.75rem 1rem;
+  font-size:12px;color:var(--danger);
+  font-family:var(--mono);white-space:pre-wrap;
+  word-break:break-all;max-height:160px;overflow-y:auto;
+}
+
+/* ── RESULTS ── */
+#results{display:none;}
+#results.show{display:block;}
+
+/* metrics */
+.mgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:0.75rem;margin-bottom:2.5rem;}
+.mc{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:14px;padding:1.2rem 1.1rem;
+  position:relative;overflow:hidden;
+  transition:border-color 0.2s,transform 0.2s;
+}
+.mc:hover{transform:translateY(-2px);}
+.mc::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  border-radius:2px 2px 0 0;
+}
+.mc.good::after{background:var(--success);}
+.mc.mid::after{background:var(--warn);}
+.mc.bad::after{background:var(--danger);}
+.mc-glow{position:absolute;inset:0;opacity:0;transition:opacity 0.2s;}
+.mc.good .mc-glow{background:radial-gradient(ellipse at 50% 0%,rgba(34,211,165,0.07),transparent 70%);}
+.mc.mid  .mc-glow{background:radial-gradient(ellipse at 50% 0%,rgba(245,158,11,0.07),transparent 70%);}
+.mc.bad  .mc-glow{background:radial-gradient(ellipse at 50% 0%,rgba(244,63,94,0.07),transparent 70%);}
+.mc:hover .mc-glow{opacity:1;}
+.mk{font-size:11px;color:var(--text3);font-family:var(--mono);letter-spacing:0.05em;margin-bottom:8px;position:relative;}
+.mv{font-size:26px;font-weight:700;letter-spacing:-0.04em;font-family:var(--mono);position:relative;}
+.mv.good{color:var(--success);}.mv.mid{color:var(--warn);}.mv.bad{color:var(--danger);}
+
+/* previews */
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem;margin-bottom:2.5rem;}
+@media(max-width:600px){.pgrid{grid-template-columns:repeat(2,1fr);}}
+.pc{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:14px;overflow:hidden;cursor:pointer;
+  transition:border-color 0.2s,transform 0.2s;
+}
+.pc:hover{border-color:var(--border2);transform:translateY(-4px);}
+.pc img{width:100%;aspect-ratio:1;object-fit:cover;display:block;background:#000;}
+.pcap{padding:0.6rem 0.8rem;font-size:11px;color:var(--text3);font-family:var(--mono);letter-spacing:0.03em;}
+
+/* download bar */
+.dlbar{
+  background:var(--bg2);
+  border:1px solid var(--border2);
+  border-radius:14px;padding:1.5rem;
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+}
+.dli strong{color:var(--text);font-weight:600;}
+.dli{font-size:13px;color:var(--text2);}
+.dli p{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:3px;}
+.btn-dl{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:0.75rem 1.5rem;border-radius:10px;
+  border:1px solid var(--accent);
+  background:rgba(0,245,196,0.07);
+  color:var(--accent);font-family:var(--font);font-size:14px;font-weight:600;
+  cursor:pointer;text-decoration:none;
+  transition:background 0.15s,box-shadow 0.15s;
+  white-space:nowrap;
+}
+.btn-dl:hover{background:rgba(0,245,196,0.14);box-shadow:0 0 20px rgba(0,245,196,0.12);}
+
+/* ── LIGHTBOX ── */
+.lb{display:none;position:fixed;inset:0;z-index:999;background:rgba(4,7,13,0.97);align-items:center;justify-content:center;flex-direction:column;}
+.lb.open{display:flex;}
+.lb img{max-width:88vw;max-height:78vh;border-radius:12px;border:1px solid var(--border2);}
+.lbcap{margin-top:1rem;font-size:13px;color:var(--text2);font-family:var(--mono);}
+.lbx{
+  position:absolute;top:1.5rem;right:1.5rem;
+  background:var(--bg3);border:1px solid var(--border2);
+  color:var(--text2);width:38px;height:38px;
+  border-radius:50%;cursor:pointer;font-size:16px;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.15s;
+}
+.lbx:hover{background:var(--bg4);color:var(--text);}
 </style>
 </head>
 <body>
 
-<header>
-  <div class="logo">
-    <div class="logo-dot"></div>
-    MedReg
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="orb orb3"></div>
+
+<nav>
+  <a class="logo" href="#">
+    <div class="logo-mark">M</div>
+    <span class="logo-name">MedReg</span>
+  </a>
+  <div class="nav-tags">
+    <span class="ntag on">API Online</span>
+    <span class="ntag">v1.0</span>
+    <span class="ntag">DICOM · NIfTI</span>
   </div>
-  <span class="badge">CT / MRI REGISTRATION</span>
-</header>
+</nav>
 
 <main>
+
+  <!-- ── HERO ── -->
   <div class="hero">
-    <h1>Multimodal<br><span>Image Registration</span></h1>
-    <p>Upload a CT and MRI DICOM series (as ZIP files). The pipeline performs 3-D rigid registration, crops to field-of-view, and computes alignment metrics.</p>
+    <div class="eyebrow"><div class="eyebrow-dot"></div>Medical Image Processing Pipeline</div>
+    <h1>CT / MRI<br><span class="line2">Image Registration</span></h1>
+    <p class="hero-desc">Upload DICOM series as ZIP files. Get rigidly-aligned NIfTI volumes, alignment metrics, and visual previews — in minutes.</p>
+
+    <div class="chips">
+      <div class="chip"><div class="chip-dot" style="background:#00f5c4"></div>3-D Rigid Registration</div>
+      <div class="chip"><div class="chip-dot" style="background:#38bdf8"></div>FOV Auto-Crop</div>
+      <div class="chip"><div class="chip-dot" style="background:#818cf8"></div>6 Alignment Metrics</div>
+      <div class="chip"><div class="chip-dot" style="background:#22d3a5"></div>Bone Mask Overlay</div>
+      <div class="chip"><div class="chip-dot" style="background:#f59e0b"></div>Edge Overlay</div>
+      <div class="chip"><div class="chip-dot" style="background:#f43f5e"></div>Checkerboard</div>
+    </div>
+
+    <div class="stat-strip">
+      <div class="stat"><span class="stat-val">NMI</span><span class="stat-lbl">Mutual Info</span></div>
+      <div class="stat"><span class="stat-val">ITK</span><span class="stat-lbl">Transform</span></div>
+      <div class="stat"><span class="stat-val">.nii</span><span class="stat-lbl">Output</span></div>
+      <div class="stat"><span class="stat-val">6×</span><span class="stat-lbl">Previews</span></div>
+    </div>
   </div>
 
-  <!-- UPLOAD -->
+  <!-- ── UPLOAD ── -->
+  <div class="sec" style="margin-top:0.5rem">01 — Upload DICOM Series</div>
   <div class="upload-grid">
-    <div class="drop-zone" id="ct-drop">
-      <input type="file" id="ct-file" accept=".zip" />
-      <span class="drop-icon">🩻</span>
-      <div class="drop-label">CT Series</div>
-      <div class="drop-sub">ZIP of DICOM files</div>
-      <div class="file-name" id="ct-name"></div>
+    <div class="drop" id="ct-drop">
+      <input type="file" id="ct-file" accept=".zip"/>
+      <div class="drop-ico">🩻</div>
+      <div class="drop-title">CT Series</div>
+      <div class="drop-sub">Drag & drop or click to browse</div>
+      <div class="drop-badge">.zip of DICOM files</div>
+      <div class="drop-file" id="ct-name"></div>
     </div>
-    <div class="drop-zone" id="mri-drop">
-      <input type="file" id="mri-file" accept=".zip" />
-      <span class="drop-icon">🧲</span>
-      <div class="drop-label">MRI Series</div>
-      <div class="drop-sub">ZIP of DICOM files</div>
-      <div class="file-name" id="mri-name"></div>
+    <div class="drop" id="mri-drop">
+      <input type="file" id="mri-file" accept=".zip"/>
+      <div class="drop-ico">🧲</div>
+      <div class="drop-title">MRI Series</div>
+      <div class="drop-sub">Drag & drop or click to browse</div>
+      <div class="drop-badge">.zip of DICOM files</div>
+      <div class="drop-file" id="mri-name"></div>
     </div>
   </div>
 
-  <button class="btn-run" id="run-btn" disabled onclick="startRegistration()">
-    Run Registration
-  </button>
+  <!-- ── RUN ── -->
+  <div class="sec" style="margin-top:1.75rem">02 — Run Pipeline</div>
+  <button class="btn-run" id="run-btn" disabled onclick="startReg()">Run Registration →</button>
 
-  <!-- STEP TIMELINE -->
-  <div class="steps" id="steps-bar" style="display:none">
-    <div class="step" id="step-upload"><div class="step-dot"></div>Upload</div>
-    <div class="step" id="step-load"><div class="step-dot"></div>Load DICOM</div>
-    <div class="step" id="step-reg"><div class="step-dot"></div>Register</div>
-    <div class="step" id="step-crop"><div class="step-dot"></div>Crop FOV</div>
-    <div class="step" id="step-metrics"><div class="step-dot"></div>Metrics</div>
-    <div class="step" id="step-done"><div class="step-dot"></div>Done</div>
+  <!-- ── PIPE ── -->
+  <div class="pipe" id="pipe">
+    <div class="pstep" id="ps0"><div class="pdot"></div>Upload</div>
+    <div class="pstep" id="ps1"><div class="pdot"></div>Load</div>
+    <div class="pstep" id="ps2"><div class="pdot"></div>Register</div>
+    <div class="pstep" id="ps3"><div class="pdot"></div>Crop</div>
+    <div class="pstep" id="ps4"><div class="pdot"></div>Metrics</div>
+    <div class="pstep" id="ps5"><div class="pdot"></div>Done</div>
   </div>
 
-  <!-- STATUS -->
   <div id="status-area"></div>
 
-  <!-- RESULTS -->
+  <!-- ── RESULTS ── -->
   <div id="results">
-    <div class="section-title">Alignment Metrics</div>
-    <div class="metrics-grid" id="metrics-grid"></div>
+    <div class="sec">03 — Alignment Metrics</div>
+    <div class="mgrid" id="mgrid"></div>
 
-    <div class="section-title">Previews</div>
-    <div class="preview-grid" id="preview-grid"></div>
+    <div class="sec">04 — Visual Previews</div>
+    <div class="pgrid" id="pgrid"></div>
 
-    <div class="section-title">Download</div>
-    <div class="dl-row">
-      <a class="btn-dl" id="dl-link" href="#">
-        ⬇ Download Results ZIP
-      </a>
-      <span class="dl-info">Includes NIfTI volumes, transform (.tfm), metrics.json, and preview PNGs</span>
+    <div class="sec">05 — Download Results</div>
+    <div class="dlbar">
+      <div class="dli">
+        <strong>Registration complete.</strong>
+        <p>NIfTI volumes · ITK transform · metrics.json · 6 preview PNGs</p>
+      </div>
+      <a class="btn-dl" id="dl-link" href="#">↓ Download ZIP</a>
     </div>
   </div>
+
 </main>
 
-<!-- LIGHTBOX -->
-<div class="lightbox" id="lightbox" onclick="closeLightbox()">
-  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
-  <img id="lb-img" src="" alt="" />
-  <div class="lightbox-caption" id="lb-cap"></div>
+<!-- ── LIGHTBOX ── -->
+<div class="lb" id="lb" onclick="closeLb()">
+  <button class="lbx" onclick="closeLb()">✕</button>
+  <img id="lb-img" src="" alt=""/>
+  <div class="lbcap" id="lb-cap"></div>
 </div>
 
 <script>
-// ── CONFIG ─────────────────────────────────────────────────────────────
-// Point this to your FastAPI server.
-// If serving the HTML from the same server, use relative URL: '/register'
-const API = 'https://ct-mri-image-registration.onrender.com';
-const POLL_MS = 3000;
+const API='';
+const POLL=3000;
+let jobId=null,timer=null;
 
-// ── STATE ──────────────────────────────────────────────────────────────
-let jobId = null;
-let pollTimer = null;
-
-// ── FILE SELECTION ─────────────────────────────────────────────────────
-['ct','mri'].forEach(mod => {
-  const input = document.getElementById(`${mod}-file`);
-  const drop  = document.getElementById(`${mod}-drop`);
-  const nameEl = document.getElementById(`${mod}-name`);
-
-  input.addEventListener('change', () => {
-    if (input.files[0]) {
-      nameEl.textContent = input.files[0].name;
-      drop.classList.add('has-file');
-      checkReady();
-    }
+['ct','mri'].forEach(m=>{
+  const inp=document.getElementById(`${m}-file`);
+  const zone=document.getElementById(`${m}-drop`);
+  const nm=document.getElementById(`${m}-name`);
+  inp.addEventListener('change',()=>{
+    if(inp.files[0]){nm.textContent=inp.files[0].name;zone.classList.add('picked');check();}
   });
-  drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('drag-over'); });
-  drop.addEventListener('dragleave', () => drop.classList.remove('drag-over'));
-  drop.addEventListener('drop', e => {
-    e.preventDefault();
-    drop.classList.remove('drag-over');
-    const file = e.dataTransfer.files[0];
-    if (file && file.name.endsWith('.zip')) {
-      const dt = new DataTransfer();
-      dt.items.add(file);
-      input.files = dt.files;
-      nameEl.textContent = file.name;
-      drop.classList.add('has-file');
-      checkReady();
+  zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('over');});
+  zone.addEventListener('dragleave',()=>zone.classList.remove('over'));
+  zone.addEventListener('drop',e=>{
+    e.preventDefault();zone.classList.remove('over');
+    const f=e.dataTransfer.files[0];
+    if(f&&f.name.endsWith('.zip')){
+      const dt=new DataTransfer();dt.items.add(f);inp.files=dt.files;
+      nm.textContent=f.name;zone.classList.add('picked');check();
     }
   });
 });
 
-function checkReady() {
-  const ct  = document.getElementById('ct-file').files[0];
-  const mri = document.getElementById('mri-file').files[0];
-  document.getElementById('run-btn').disabled = !(ct && mri);
+function check(){
+  document.getElementById('run-btn').disabled=
+    !(document.getElementById('ct-file').files[0]&&document.getElementById('mri-file').files[0]);
 }
 
-// ── STEPS HELPER ────────────────────────────────────────────────────────
-const STEP_IDS = ['step-upload','step-load','step-reg','step-crop','step-metrics','step-done'];
-
-function setStep(n) {
-  STEP_IDS.forEach((id, i) => {
-    const el = document.getElementById(id);
-    el.className = 'step' + (i < n ? ' done' : i === n ? ' active' : '');
-  });
+function setStep(n){
+  for(let i=0;i<6;i++){
+    const el=document.getElementById(`ps${i}`);
+    el.className='pstep'+(i<n?' done':i===n?' active':'');
+  }
 }
 
-// ── START ────────────────────────────────────────────────────────────────
-async function startRegistration() {
-  const ct  = document.getElementById('ct-file').files[0];
-  const mri = document.getElementById('mri-file').files[0];
-  if (!ct || !mri) return;
-
-  document.getElementById('run-btn').disabled = true;
-  document.getElementById('results').classList.remove('visible');
-  document.getElementById('steps-bar').style.display = 'flex';
+async function startReg(){
+  const ct=document.getElementById('ct-file').files[0];
+  const mri=document.getElementById('mri-file').files[0];
+  if(!ct||!mri)return;
+  document.getElementById('run-btn').disabled=true;
+  document.getElementById('run-btn').textContent='Processing…';
+  document.getElementById('results').classList.remove('show');
+  document.getElementById('pipe').classList.add('show');
   setStep(0);
+  const fd=new FormData();
+  fd.append('ct_zip',ct);fd.append('mri_zip',mri);
+  showSt('loading','Uploading files to server…');
+  try{
+    const r=await fetch(`${API}/register`,{method:'POST',body:fd});
+    if(!r.ok){const e=await r.json().catch(()=>({detail:r.statusText}));throw new Error(e.detail||'Upload failed');}
+    const d=await r.json();jobId=d.job_id;setStep(1);
+    showSt('loading',`Job queued — ID: ${jobId.slice(0,8)}…`);
+    timer=setInterval(poll,POLL);
+  }catch(e){
+    showSt('error',e.message);
+    document.getElementById('run-btn').disabled=false;
+    document.getElementById('run-btn').textContent='Run Registration →';
+  }
+}
 
-  const fd = new FormData();
-  fd.append('ct_zip', ct);
-  fd.append('mri_zip', mri);
-
-  showStatus('loading', 'Uploading files to server…');
-
-  try {
-    const res = await fetch(`${API}/register`, { method: 'POST', body: fd });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ detail: res.statusText }));
-      throw new Error(err.detail || 'Upload failed');
+async function poll(){
+  try{
+    const r=await fetch(`${API}/status/${jobId}`);
+    const d=await r.json();
+    if(d.status==='queued'){setStep(1);showSt('loading','Queued — waiting for worker…');}
+    else if(d.status==='running'){setStep(2);showSt('loading','Performing 3-D rigid registration… (1–5 min)');}
+    else if(d.status==='done'){
+      clearInterval(timer);setStep(5);
+      showSt('done','Registration complete ✓');
+      renderResults(d);
+    }else if(d.status==='failed'){
+      clearInterval(timer);
+      showSt('error',d.error||'Pipeline failed');
+      document.getElementById('run-btn').disabled=false;
+      document.getElementById('run-btn').textContent='Run Registration →';
     }
-    const data = await res.json();
-    jobId = data.job_id;
-    setStep(1);
-    showStatus('loading', `Job queued — ID: ${jobId.slice(0,8)}…`);
-    pollTimer = setInterval(pollStatus, POLL_MS);
-  } catch (e) {
-    showStatus('error', e.message);
-    document.getElementById('run-btn').disabled = false;
+  }catch(_){}
+}
+
+function showSt(type,msg){
+  const a=document.getElementById('status-area');
+  if(type==='loading'){
+    a.innerHTML=`<div class="sc"><div class="spin"></div><div><div class="slbl">Status</div><div class="sval">${esc(msg)}</div></div></div>`;
+  }else if(type==='done'){
+    a.innerHTML=`<div class="sc"><span style="font-size:22px">✅</span><div><div class="slbl">Status</div><div class="sval ok">${esc(msg)}</div></div></div>`;
+  }else{
+    a.innerHTML=`<div class="sc" style="align-items:flex-start"><span style="font-size:22px;flex-shrink:0">❌</span><div style="width:100%"><div class="slbl">Error</div><div class="sval err">Pipeline failed</div><div class="ebox">${esc(msg)}</div></div></div>`;
   }
 }
 
-// ── POLL ─────────────────────────────────────────────────────────────────
-async function pollStatus() {
-  try {
-    const res  = await fetch(`${API}/status/${jobId}`);
-    const data = await res.json();
-
-    if (data.status === 'queued') {
-      setStep(1);
-      showStatus('loading', 'Queued — waiting for worker…');
-
-    } else if (data.status === 'running') {
-      // Guess progress by elapsed time (registration takes ~1–5 min)
-      setStep(2);
-      showStatus('loading', 'Performing 3-D rigid registration… this takes 1–5 minutes.');
-
-    } else if (data.status === 'done') {
-      clearInterval(pollTimer);
-      setStep(5);
-      showStatus('done', 'Registration complete!');
-      renderResults(data);
-
-    } else if (data.status === 'failed') {
-      clearInterval(pollTimer);
-      showStatus('error', data.error || 'Pipeline failed. Check server logs.');
-      document.getElementById('run-btn').disabled = false;
-    }
-  } catch (e) {
-    // network blip — keep polling
-  }
-}
-
-// ── STATUS DISPLAY ────────────────────────────────────────────────────────
-function showStatus(type, msg) {
-  const area = document.getElementById('status-area');
-  if (type === 'loading') {
-    area.innerHTML = `
-      <div class="status-card">
-        <div class="spinner"></div>
-        <div class="status-text">
-          <div class="label">Status</div>
-          <div class="value">${esc(msg)}</div>
-        </div>
-      </div>`;
-  } else if (type === 'done') {
-    area.innerHTML = `
-      <div class="status-card">
-        <span style="font-size:20px">✅</span>
-        <div class="status-text">
-          <div class="label">Status</div>
-          <div class="value ok">${esc(msg)}</div>
-        </div>
-      </div>`;
-  } else {
-    area.innerHTML = `
-      <div class="status-card" style="align-items:flex-start">
-        <span style="font-size:20px;flex-shrink:0">❌</span>
-        <div>
-          <div class="status-text" style="margin-bottom:0.5rem">
-            <div class="label">Error</div>
-            <div class="value err">Pipeline failed</div>
-          </div>
-          <div class="error-box">${esc(msg)}</div>
-        </div>
-      </div>`;
-  }
-}
-
-// ── RENDER RESULTS ────────────────────────────────────────────────────────
-const PREVIEW_FILES = [
-  { file: 'ct_mid.png',           label: 'CT — mid slice' },
-  { file: 'mri_mid.png',          label: 'MRI — mid slice' },
-  { file: 'overlay_mid.png',      label: 'Overlay (50/50)' },
-  { file: 'checkerboard_mid.png', label: 'Checkerboard' },
-  { file: 'edge_overlay_mid.png', label: 'Edge overlay' },
-  { file: 'organ_overlap_mid.png',label: 'Bone mask' },
+const PREVS=[
+  {file:'ct_mid.png',label:'CT mid-slice'},
+  {file:'mri_mid.png',label:'MRI mid-slice'},
+  {file:'overlay_mid.png',label:'50/50 overlay'},
+  {file:'checkerboard_mid.png',label:'Checkerboard'},
+  {file:'edge_overlay_mid.png',label:'Edge overlay'},
+  {file:'organ_overlap_mid.png',label:'Bone mask'},
 ];
-
-const METRIC_META = {
-  nmi_rigid_cropped:       { label: 'NMI',         good: v => v > 1.3, mid: v => v > 1.1 },
-  edge_dice_rigid_cropped: { label: 'Edge Dice',   good: v => v > 0.4, mid: v => v > 0.2 },
-  fov_overlap_ratio:       { label: 'FOV Overlap', good: v => v > 0.6, mid: v => v > 0.3 },
-  ncc_rigid_cropped:       { label: 'NCC',         good: v => v > 0.6, mid: v => v > 0.3 },
-  mad_rigid_cropped:       { label: 'MAD',         good: v => v < 0.2, mid: v => v < 0.4 },
-  mismatch_rigid_cropped:  { label: 'Mismatch',    good: v => v < 0.4, mid: v => v < 0.6 },
+const META={
+  nmi_rigid_cropped:{label:'NMI',good:v=>v>1.3,mid:v=>v>1.1},
+  edge_dice_rigid_cropped:{label:'Edge Dice',good:v=>v>0.4,mid:v=>v>0.2},
+  fov_overlap_ratio:{label:'FOV Ratio',good:v=>v>0.6,mid:v=>v>0.3},
+  ncc_rigid_cropped:{label:'NCC',good:v=>v>0.6,mid:v=>v>0.3},
+  mad_rigid_cropped:{label:'MAD',good:v=>v<0.2,mid:v=>v<0.4},
+  mismatch_rigid_cropped:{label:'Mismatch',good:v=>v<0.4,mid:v=>v<0.6},
 };
 
-function renderResults(data) {
-  const resultsEl = document.getElementById('results');
-  resultsEl.classList.add('visible');
-
-  // Metrics
-  const grid = document.getElementById('metrics-grid');
-  grid.innerHTML = '';
-  const metrics = data.metrics || {};
-  for (const [key, meta] of Object.entries(METRIC_META)) {
-    const val = metrics[key];
-    if (val === undefined) continue;
-    const cls = meta.good(val) ? 'good' : meta.mid(val) ? 'mid' : 'bad';
-    grid.innerHTML += `
-      <div class="metric-card">
-        <div class="metric-key">${meta.label}</div>
-        <div class="metric-val ${cls}">${val.toFixed(4)}</div>
-      </div>`;
+function renderResults(data){
+  document.getElementById('results').classList.add('show');
+  const mg=document.getElementById('mgrid');mg.innerHTML='';
+  const m=data.metrics||{};
+  for(const[k,meta]of Object.entries(META)){
+    const v=m[k];if(v===undefined)continue;
+    const cls=meta.good(v)?'good':meta.mid(v)?'mid':'bad';
+    mg.innerHTML+=`<div class="mc ${cls}"><div class="mc-glow"></div><div class="mk">${meta.label}</div><div class="mv ${cls}">${v.toFixed(4)}</div></div>`;
   }
-
-  // Previews
-  const prev = document.getElementById('preview-grid');
-  prev.innerHTML = '';
-  PREVIEW_FILES.forEach(({ file, label }) => {
-    const src = `${API}/preview/${jobId}/${file}`;
-    prev.innerHTML += `
-      <div class="preview-card" onclick="openLightbox('${src}','${label}')">
-        <img src="${src}" alt="${label}" loading="lazy" />
-        <div class="preview-caption">${label}</div>
-      </div>`;
+  const pg=document.getElementById('pgrid');pg.innerHTML='';
+  PREVS.forEach(({file,label})=>{
+    const src=`${API}/preview/${jobId}/${file}`;
+    pg.innerHTML+=`<div class="pc" onclick="openLb('${src}','${label}')"><img src="${src}" alt="${label}" loading="lazy"/><div class="pcap">${label}</div></div>`;
   });
-
-  // Download
-  document.getElementById('dl-link').href = `${API}/download/${jobId}`;
-
-  // re-enable button for new job
-  document.getElementById('run-btn').disabled = false;
-  document.getElementById('run-btn').textContent = 'Run New Registration';
+  document.getElementById('dl-link').href=`${API}/download/${jobId}`;
+  document.getElementById('run-btn').disabled=false;
+  document.getElementById('run-btn').textContent='Run New Registration →';
 }
 
-// ── LIGHTBOX ──────────────────────────────────────────────────────────────
-function openLightbox(src, cap) {
-  document.getElementById('lb-img').src = src;
-  document.getElementById('lb-cap').textContent = cap;
-  document.getElementById('lightbox').classList.add('open');
+function openLb(src,cap){
+  document.getElementById('lb-img').src=src;
+  document.getElementById('lb-cap').textContent=cap;
+  document.getElementById('lb').classList.add('open');
 }
-function closeLightbox() {
-  document.getElementById('lightbox').classList.remove('open');
-}
-
-// ── UTILS ─────────────────────────────────────────────────────────────────
-function esc(s) {
-  return String(s)
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;');
-}
+function closeLb(){document.getElementById('lb').classList.remove('open');}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLb();});
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 </script>
 </body>
 </html>
